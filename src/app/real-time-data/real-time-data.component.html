@@ -1,0 +1,21 @@
+<section *ngIf="(realtimeData$ | async) as data; else placeholder" class="real-time-data">
+  <h2>Market Data:</h2>
+  <div class='data-block'>
+    <div class="column">
+      <p class="label">Symbol:</p>
+      <p class="value">{{currentAssets.asset_id_base}} / {{currentAssets.asset_id_quote}}</p>
+    </div>
+    <div class="column">
+      <p class="label">Price:</p>
+      <p class="value">{{data.price}}</p>
+    </div>
+    <div class="column">
+      <p class="label">Time:</p>
+      <p class="value">{{data.time_exchange | date : 'YYYY-MM-dd hh:mm:ss.SSS'}}</p>
+    </div>
+  </div>
+</section>
+
+<ng-template #placeholder>
+  <div class="placeholder">Here will be the data you subscribed to... </div>
+</ng-template>

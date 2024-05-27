@@ -1,0 +1,25 @@
+.data-block {
+  display: flex;
+  justify-content: space-around;
+}
+
+.column {
+  width: 20%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.real-time-data {
+  border: 1px solid black;
+  border-radius: 20px;
+  padding: 20px;
+}
+
+.placeholder {
+  height: 112px;
+  border: 1px solid black;
+  border-radius: 20px;
+  padding: 20px;
+  text-align: center;
+}
