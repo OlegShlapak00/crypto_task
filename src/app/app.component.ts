@@ -1,86 +1,81 @@
-import {Component, OnInit} from "@angular/core";
+import {Component, OnDestroy, OnInit} from "@angular/core";
 import {ApiRestService} from "../servises/api-rest.service";
-import {catchError, debounceTime, map, Observable, startWith, take, throttleTime} from "rxjs";
+import {filter, map, Observable, throttleTime} from "rxjs";
 import {WebSocketService} from "../servises/web-socket.service";
 import {FormControl, Validators} from "@angular/forms";
-import {AssetExchange, AssetType, ChartDataRecord} from "../models/models";
+import {InstrumentExchange, ChartDataRecord, Instrument} from "../models/models";
+import {AuthService} from "../servises/auth.service";
+import {retryWithDelay} from "../helpers/helpers";
+
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   title = 'crypto';
-  realtimeData$: Observable<AssetExchange>;
-  allAssets: AssetType[];
-  transformedChartData: ChartDataRecord[] | null = null;
-  baseControl = new FormControl('', [Validators.required]);
-  quoteControl = new FormControl('', [Validators.required]);
-  filteredBaseOptions$: Observable<string[]>;
-  filteredQuoteOptions$: Observable<string[]>;
-  currentAssets: AssetType;
+  realtimeData$: Observable<InstrumentExchange | null>;
+  transformedChartData: ChartDataRecord[] = [];
+  instrumentControl = new FormControl('', [Validators.required]);
+  instrumentList$: Observable<Instrument[]>;
+  currentInstrument?: Instrument;
+  allInstruments: Instrument[];
 
-  constructor(private apiRestService: ApiRestService, private websocketService: WebSocketService) {}
+  constructor(
+    private apiRestService: ApiRestService,
+    private websocketService: WebSocketService,
+    public authService: AuthService
+  ) {}
 
   ngOnInit(): void {
-
-    this.apiRestService.getAllExchanges().pipe(take(1)).subscribe(data => {
-      this.allAssets = data.map((asset: AssetType) => {
-        return {
-          asset_id_base: asset.asset_id_base,
-          asset_id_quote: asset.asset_id_quote
-        }
-      });
+    this.authService.login().subscribe((resultData: {expires_in: string, access_token: string}) => {
+      this.authService.setSession(resultData);
     });
 
-    this.realtimeData$ = this.websocketService.$socketData.pipe(throttleTime(1000) as any);
+    this.apiRestService
+      .getFilteredProviders('')
+      .pipe(
+        map(result => {
+          this.allInstruments = result.data.map((symbol: any) => {
+            return {
+              id: symbol.id,
+              name: `${symbol.baseCurrency}/${symbol.currency}`
+            }
+        })}),
+        retryWithDelay(400, 3)
+      ).subscribe();
 
-    this.filteredBaseOptions$ = this.baseControl.valueChanges.pipe(
-      startWith(''),
-      map(() => this.filterAsset('BASE')),
-      debounceTime(500)
+    this.instrumentList$ = this.instrumentControl.valueChanges.pipe(
+      map(symbol => this.allInstruments.filter(option => option.name.includes(symbol?.toUpperCase() || '')))
     );
 
-    this.filteredQuoteOptions$ = this.quoteControl.valueChanges.pipe(
-      startWith(''),
-      map(() => this.filterAsset('QUOTE')),
-      debounceTime(500)
+    this.realtimeData$ = this.websocketService.$socketData.pipe(
+      filter((data) => !!(data?.last)),
+      map((data: { last: InstrumentExchange }) => data.last),
+      throttleTime(1000),
     );
+
   }
 
   transformData(data: any): ChartDataRecord[] {
     return data.map((entry: any) => ({
-      date: new Date(entry.time_period_start),
-      price: entry.price_close
+      x: new Date(entry.t),
+      y: [entry.o, entry.h, entry.l, entry.c]
     }));
   }
 
-  subscribeAsset(): void {
-    this.currentAssets = {
-      asset_id_base : this.baseControl.value?.toUpperCase() || '',
-      asset_id_quote: this.quoteControl.value?.toUpperCase() || ''
-    }
+  subscribeForInstrument(): void {
+    this.currentInstrument = this.allInstruments.find((option => option.name === this.instrumentControl.value));
+    this.currentInstrument && this.websocketService.subscribeForInstrument(this.currentInstrument.id);
+    this.currentInstrument && this.apiRestService.getDataForChart(this.currentInstrument.id).subscribe(result => {
+     this.transformedChartData = this.transformData(result.data);
+    });
 
-    this.websocketService.subscribeForAssets(this.currentAssets.asset_id_base, this.currentAssets.asset_id_quote);
-
-    this.apiRestService
-      .getDataForChart(this.currentAssets.asset_id_base, this.currentAssets.asset_id_quote)
-      .pipe(take(1), catchError(() => {
-        this.transformedChartData = null;
-        return [];
-      }))
-      .subscribe(chartData => {
-        this.transformedChartData = this.transformData(chartData);
-      });
   }
 
-  private filterAsset(type: 'BASE' | 'QUOTE'): string[] {
-    return this.allAssets
-      ?.filter((asset) => asset.asset_id_base.toLowerCase().includes((this.baseControl.value || '').toLowerCase())
-        && asset.asset_id_quote.toLowerCase().includes((this.quoteControl.value || '').toLowerCase()))
-      ?.map((asset: AssetType) => type === 'BASE' ? asset.asset_id_base : asset.asset_id_quote)
-      ?.filter((value: string, index: number, array: string[]) => array.indexOf(value) === index);
 
+
+  ngOnDestroy(): void {
   }
 }

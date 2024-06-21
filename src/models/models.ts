@@ -1,14 +1,15 @@
-export interface AssetType {
-  asset_id_base: string;
-  asset_id_quote: string;
-}
-
 export interface ChartDataRecord {
-  date: Date;
-  price: number;
+  x: Date;
+  y: number[];
 }
 
-export interface AssetExchange {
+export interface InstrumentExchange {
   price: number;
-  time_exchange: string;
+  timestamp: string;
+}
+
+
+export interface Instrument {
+  id: string;
+  name: string;
 }

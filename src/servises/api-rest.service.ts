@@ -1,21 +1,31 @@
 import {Injectable} from '@angular/core';
-import {apiKey} from '../configs/api';
 import {HttpClient} from "@angular/common/http";
 import {Observable} from "rxjs";
+import {url} from "../environments/environments";
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiRestService {
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient) {}
+
+  getDataForChart(instrumentId: string): Observable<any> {
+
+    return this.http.get(`${url}/api/bars/v1/bars/count-back`, {
+      params: {
+        instrumentId,
+        provider: 'simulation',
+        interval: 1,
+        periodicity: 'minute',
+        barsCount: 20,
+      }
+    });
   }
 
-  getDataForChart(base: string, quote: string): Observable<any> {
-    return this.http.get(`https://rest.coinapi.io/v1/ohlcv/BITSTAMP_SPOT_${base}_${quote}/history?apikey=${apiKey}&period_id=1DAY`);
+  getFilteredProviders(symbol: string): Observable<any> {
+    //get providers only for Forex simulation, for example
+    return this.http.get(`${url}/api/instruments/v1/instruments?provider=simulation&kind=forex&size=110&symbol=${symbol.toUpperCase()}`);
   }
 
-  getAllExchanges(): Observable<any> {
-    return this.http.get(` https://rest.coinapi.io/v1/symbols?apikey=${apiKey}&filter_symbol_id=BINANCE_SPOT_`);
-  }
 }

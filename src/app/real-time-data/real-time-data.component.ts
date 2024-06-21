@@ -1,6 +1,6 @@
 import {Component, Input} from '@angular/core';
 import {Observable} from "rxjs";
-import {AssetExchange, AssetType} from "../../models/models";
+import {InstrumentExchange, Instrument} from "../../models/models";
 
 @Component({
   selector: 'app-real-time-data',
@@ -8,7 +8,6 @@ import {AssetExchange, AssetType} from "../../models/models";
   styleUrl: './real-time-data.component.css'
 })
 export class RealTimeDataComponent {
-  @Input() realtimeData$: Observable<AssetExchange>;
-  @Input() currentAssets: AssetType;
-
+  @Input() realtimeData$: Observable<InstrumentExchange | null>;
+  @Input() currentInstrument?: Instrument;
 }

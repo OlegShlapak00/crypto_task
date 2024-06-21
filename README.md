@@ -1,3 +1,12 @@
+# How to set up 
+
+1. Change environment.ts file with right credentials
+2. open cmd and open Chrome Browser with disabled security. `chrome.exe --user-data-dir="C://Chrome dev session" --disable-web-security`
+   this is required because there is no CORS configured on the server side and without it you will not be able to get the data
+3. Install all required libraries
+4. build and run dev server via `ng serve`
+5. In Browser open `http://localhost:4200/`
+
 # Crypto
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.7.

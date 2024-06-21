@@ -10,18 +10,9 @@
   align-items: center;
 }
 
-.divider {
-  font-size: 30px;
-  font-weight: 400;
-}
-
-.base, .quote {
-  width: 100px;
+.base {
+  width: 300px;
   padding-right: 20px;
-}
-
-.quote {
-  padding-left: 20px;
 }
 
 .subscribe-btn {

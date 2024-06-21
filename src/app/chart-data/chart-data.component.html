@@ -1,5 +1,11 @@
 <section class="chart-data">
-  <h2>Charting Data:</h2>
-  <p *ngIf="!transformedChartData">Subscribe for assets pair to show data</p>
-  <div id="lineChart"></div>
+  <canvasjs-chart *ngIf="chartData?.length else placeholder"
+                  [options]="chartOptions"
+                  [styles]="{width: '100%', height:'360px'}"
+                  (chartInstance)="getChartInstance($event)"
+  ></canvasjs-chart>
+
+  <ng-template #placeholder>
+    <div class="placeholder">Here will be the chart with data ... </div>
+  </ng-template>
 </section>

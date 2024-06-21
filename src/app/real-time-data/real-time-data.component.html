@@ -3,15 +3,15 @@
   <div class='data-block'>
     <div class="column">
       <p class="label">Symbol:</p>
-      <p class="value">{{currentAssets.asset_id_base}} / {{currentAssets.asset_id_quote}}</p>
+      <p class="value">{{currentInstrument?.name}}</p>
     </div>
     <div class="column">
       <p class="label">Price:</p>
-      <p class="value">{{data.price}}</p>
+      <p class="value">{{data?.price || ''}}</p>
     </div>
     <div class="column">
       <p class="label">Time:</p>
-      <p class="value">{{data.time_exchange | date : 'YYYY-MM-dd hh:mm:ss.SSS'}}</p>
+      <p class="value">{{data?.timestamp | date : 'YYYY-MM-dd hh:mm:ss.SSS' || ''}}</p>
     </div>
   </div>
 </section>

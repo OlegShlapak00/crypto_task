@@ -1,41 +1,28 @@
-<section class="wrapper">
+<section *ngIf="authService.isLoggedIn()" class="wrapper">
   <section class="subscription">
     <mat-form-field class="base">
       <input type="text"
-             placeholder="Base"
+             placeholder="Symbol"
              matInput
-             [formControl]="baseControl"
+             [value]="''"
+             [formControl]="instrumentControl"
              [matAutocomplete]="baseAutocomplete">
       <mat-autocomplete #baseAutocomplete="matAutocomplete">
-        <div *ngFor="let option of (filteredBaseOptions$ | async)">
-          <mat-option [value]="option">{{option}}</mat-option>
-        </div>
-      </mat-autocomplete>
-    </mat-form-field>
-    <p class="divider">/</p>
-    <mat-form-field class="quote">
-      <input type="text"
-             placeholder="Quote"
-             matInput
-             [formControl]="quoteControl"
-             [matAutocomplete]="quoteAutocomplete">
-      <mat-autocomplete #quoteAutocomplete="matAutocomplete">
-        <div *ngFor="let option of (filteredQuoteOptions$ | async)">
-          <mat-option [value]="option">{{option}}</mat-option>
+        <div *ngFor="let option of (instrumentList$ | async)">
+          <mat-option [value]="option.name">{{option.name}}</mat-option>
         </div>
       </mat-autocomplete>
     </mat-form-field>
 
     <button mat-flat-button color="primary"
             class="subscribe-btn"
-            [disabled]="!baseControl.valid || !quoteControl.valid"
-            (click)="subscribeAsset()">
+            [disabled]="!instrumentControl.valid"
+            (click)="subscribeForInstrument()">
       Subscribe
     </button>
   </section>
 
-  <app-real-time-data [currentAssets]="currentAssets" [realtimeData$]="realtimeData$"></app-real-time-data>
-
-  <app-chart-data [transformedChartData]="transformedChartData"></app-chart-data>
+  <app-real-time-data [currentInstrument]="currentInstrument" [realtimeData$]="realtimeData$"></app-real-time-data>
+  <app-chart-data [chartData]="transformedChartData"></app-chart-data>
 
 </section>
